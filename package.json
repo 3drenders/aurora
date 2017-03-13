@@ -1,0 +1,33 @@
+{
+  "name": "aurora",
+  "version": "1.0.0",
+  "description": "An API that grabs a cool GIF based on text and emotion",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tijnrenders/aurora.git"
+  },
+  "author": "Tijn Renders",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tijnrenders/aurora/issues"
+  },
+  "homepage": "https://github.com/tijnrenders/aurora#readme",
+  "dependencies": {
+    "babel-cli": "^6.0.0",
+    "babel-preset-es2015": "^6.0.0",
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1",
+    "node-fetch": "^1.6.3",
+    "request": "^2.79.0",
+    "request-promise-native": "^1.0.3"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.23.0",
+    "babel-preset-env": "^1.2.1",
+    "babel-preset-es2015": "^6.22.0"
+  }
+}
