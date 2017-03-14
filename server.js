@@ -23,8 +23,10 @@ let rp = require('request-promise-native');
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-//Setup server on port 80
-app.listen((process.env.PORT || 80));
+//Setup server on port 3000
+app.listen(3000);
+
+console.log('Starting Aurora server on port 3000');
 
 /**
  * @function redirectToDocs
@@ -34,5 +36,19 @@ app.listen((process.env.PORT || 80));
  */
 app.get('/', function redirectToDocs(req, res) {
     console.log('Root URL accesed, redirected to documentation');
-    res.redirect('https://tijnrenders.github.io/aurora/');
+    res.redirect('https://github.com/tijnrenders/aurora');
+});
+
+app.post('/getgif', function getGif(req, res) {
+
+    let text = req.body.text;
+    console.log(text);
+
+    let result = {
+    	"text": text,
+    	"result": "coolurl.com"
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(result));
 });
