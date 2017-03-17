@@ -17,7 +17,15 @@ let request = require('request');
 // Initiate express app
 let app = express();
 // Import promise support
-let rp = require('request-promise-native');
+let Promise = require("bluebird");
+
+let ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
+
+let toneAnalyzer = new ToneAnalyzerV3({
+    username: '38bfefe8-10b7-4faf-a4dc-af6f8f523c20',
+    password: 'qi6JYVQfwS2D',
+    version_date: '2016-05-19'
+});
 
 // Initiate Bodyparser
 app.use(bodyParser.urlencoded({extended: false}));
@@ -42,13 +50,26 @@ app.get('/', function redirectToDocs(req, res) {
 app.post('/getgif', function getGif(req, res) {
 
     let text = req.body.text;
-    console.log(text);
+    console.log('String received: ' + text);
+
+    toneAnalyzer.tone({ text: text },
+        function(err, tone) {
+            console.log('Analyzing tone');
+            if (err)
+                console.log(err);
+            else
+                return tone;
+        });
+});
+
+function sendResult(text, tone){
 
     let result = {
-    	"text": text,
-    	"result": "coolurl.com"
+        "text": text,
+        "toneAnalyzer": tone,
+        "result": "coolurl.com"
     };
 
     res.setHeader('Content-Type', 'application/json');
     res.send(JSON.stringify(result));
-});
+}
