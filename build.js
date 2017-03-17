@@ -19,6 +19,8 @@ var request = require('request');
 var app = express();
 // Import promise support
 var Promise = require("bluebird");
+// Import await
+var nodeAwait = require('await');
 
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 
@@ -28,7 +30,7 @@ var toneAnalyzer = new ToneAnalyzerV3({
     version_date: '2016-05-19'
 });
 
-// Initiate Bodyparser
+// Initiate Body parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -48,25 +50,30 @@ app.get('/', function redirectToDocs(req, res) {
     res.redirect('https://github.com/tijnrenders/aurora');
 });
 
-app.post('/getgif', function getGif(req, res) {
+app.post('/', function getGif(req, res) {
 
     var text = req.body.text;
     console.log('String received: ' + text);
 
+    var getTone = nodeAwait('tone');
+
     toneAnalyzer.tone({ text: text }, function (err, tone) {
+
+        if (err) console.log(err);else getTone.keep('tone', tone);
+    });
+
+    getTone.then(function (got) {
         console.log('Analyzing tone');
-        if (err) console.log(err);else return tone;
+
+        var result = {
+            "text": text,
+            "toneAnalyzer": got.tone,
+            "result": "http://coolurl.com"
+        };
+
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(result));
+    }, function (err) {
+        console.log(err);
     });
 });
-
-function sendResult(text, tone) {
-
-    var result = {
-        "text": text,
-        "toneAnalyzer": tone,
-        "result": "coolurl.com"
-    };
-
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(result));
-}
