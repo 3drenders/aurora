@@ -57,17 +57,26 @@ app.post('/', function getGif(req, res) {
 
     var getTone = nodeAwait('tone');
 
-    toneAnalyzer.tone({ text: text }, function (err, tone) {
-
-        if (err) console.log(err);else getTone.keep('tone', tone);
-    });
+    getToneAnalysis(text);
 
     getTone.then(function (got) {
         console.log('Analyzing tone');
 
+        var data = got.tone.document_tone.tone_categories[0].tones;
+
+        var cleanedToneResults = {
+            "anger": data[0].score,
+            "disgust": data[1].score,
+            "fear": data[2].score,
+            "joy": data[3].score,
+            "sadness": data[4].score
+        };
+
+        cleanedToneResults = sortProperties(cleanedToneResults);
+
         var result = {
             "text": text,
-            "toneAnalyzer": got.tone,
+            "toneAnalyzer": cleanedToneResults,
             "result": "http://coolurl.com"
         };
 
@@ -76,4 +85,25 @@ app.post('/', function getGif(req, res) {
     }, function (err) {
         console.log(err);
     });
+
+    function getToneAnalysis(text) {
+        toneAnalyzer.tone({ text: text }, function (err, tone) {
+
+            if (err) console.log(err);else getTone.keep('tone', tone);
+        });
+    }
 });
+
+function sortProperties(obj) {
+    // convert object into array
+    var sortable = [];
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) sortable.push([key, obj[key]]);
+    } // each item is an array in format [key, value]
+
+    // sort items by value
+    sortable.sort(function (a, b) {
+        return b[1] - a[1]; // compare numbers
+    });
+    return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
+}
