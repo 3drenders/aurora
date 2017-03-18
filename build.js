@@ -21,8 +21,10 @@ var app = express();
 var Promise = require("bluebird");
 // Import await
 var nodeAwait = require('await');
-//Import Giphy support
+// Import Giphy support
 var giphy = require('giphy-api')('dc6zaTOxFJmzC');
+// Import keyword extractor
+var keyword = require("keyword-extractor");
 
 var ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 
@@ -58,7 +60,7 @@ app.post('/', function getGif(req, res) {
     console.log('String received: ' + text);
 
     var getTone = nodeAwait('tone');
-    var getGifs = nodeAwait('toneResults');
+    var getGifs = nodeAwait('toneResults', 'keywords');
 
     getToneAnalysis(text);
 
@@ -75,7 +77,19 @@ app.post('/', function getGif(req, res) {
         };
 
         cleanedToneResults = sortProperties(cleanedToneResults);
+
+        var keywords = keyword.extract(text, {
+            language: "english",
+            remove_digits: true,
+            return_changed_case: true,
+            remove_duplicates: false
+
+        });
+
+        console.log(keywords);
+
         getGifs.keep('toneResults', cleanedToneResults);
+        getGifs.keep('keywords', keywords);
     }, function (err) {
         console.log(err);
     });
@@ -83,13 +97,14 @@ app.post('/', function getGif(req, res) {
     getGifs.then(function (got) {
 
         giphy.search(got.toneResults[0][0]).then(function (res) {
+
             var firstResult = res.data[0].images.fixed_height.url;
+            firstResult = firstResult.replace(/\s/g, '');
             sendResponse(firstResult);
         });
     });
 
     function sendResponse(data) {
-
         res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(data));
     }
