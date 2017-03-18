@@ -19,7 +19,9 @@ let app = express();
 // Import promise support
 let Promise = require("bluebird");
 // Import await
-var nodeAwait = require('await');
+let nodeAwait = require('await');
+//Import Giphy support
+let giphy = require('giphy-api')('dc6zaTOxFJmzC');
 
 let ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 
@@ -55,11 +57,11 @@ app.post('/', function getGif(req, res) {
     console.log('String received: ' + text);
 
     let getTone = nodeAwait('tone');
+    let getGifs = nodeAwait('toneResults');
 
     getToneAnalysis(text);
 
     getTone.then(function(got){
-        console.log('Analyzing tone');
 
         let data = got.tone.document_tone.tone_categories[0].tones;
 
@@ -72,21 +74,30 @@ app.post('/', function getGif(req, res) {
         };
 
         cleanedToneResults = sortProperties(cleanedToneResults);
-
-        let result = {
-            "text": text,
-            "toneAnalyzer": cleanedToneResults,
-            "result": "http://coolurl.com"
-        };
-
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(result));
+        getGifs.keep('toneResults', cleanedToneResults);
 
     },function(err){
         console.log(err);
     });
 
+    getGifs.then(function(got){
+
+        giphy.search(got.toneResults[0][0]).then(function (res) {
+            let firstResult = res.data[0].images.fixed_height.url;
+            sendResponse(firstResult);
+        });
+    });
+
+    function sendResponse(data){
+
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(data));
+    }
+
     function getToneAnalysis(text){
+
+        console.log('Analyzing tone');
+
         toneAnalyzer.tone({ text: text },
             function(err, tone) {
 
@@ -94,23 +105,20 @@ app.post('/', function getGif(req, res) {
                     console.log(err);
                 else
                     getTone.keep('tone', tone);
-        });
+            });
     }
 
+    function sortProperties(obj) {
+        // convert object into array
+        var sortable=[];
+        for(var key in obj)
+            if(obj.hasOwnProperty(key))
+                sortable.push([key, obj[key]]); // each item is an array in format [key, value]
+
+        // sort items by value
+        sortable.sort(function(a, b) {
+            return b[1]-a[1]; // compare numbers
+        });
+        return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
+    }
 });
-
-function sortProperties(obj)
-{
-    // convert object into array
-    var sortable=[];
-    for(var key in obj)
-        if(obj.hasOwnProperty(key))
-            sortable.push([key, obj[key]]); // each item is an array in format [key, value]
-
-    // sort items by value
-    sortable.sort(function(a, b)
-    {
-        return b[1]-a[1]; // compare numbers
-    });
-    return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
-}
