@@ -1,14 +1,14 @@
 'use strict';
 
-function update(event) {
+function update(event){
 
-    if (event.keyCode == 13) {
-        var value = document.querySelector('.input').value;
-        var image = document.querySelector('.image');
+    if(event.keyCode == 13) {
+        let value = document.querySelector('.input').value;
+        let image = document.querySelector('.image');
 
         console.log(value);
 
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         var url = "http://localhost:3000";
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-type", "application/json");
@@ -16,10 +16,12 @@ function update(event) {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 var json = JSON.parse(xhr.responseText);
                 image.src = json;
+
             }
         };
 
-        var data = JSON.stringify({ "text": value });
+        var data = JSON.stringify({"text": value});
         xhr.send(data);
     }
 }
+

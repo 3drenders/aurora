@@ -10,6 +10,8 @@
 
 // Import Express for routing, etc.
 let express = require('express');
+// Import filesystem 
+let fs = require("fs");
 // Import BodyParser for parsing data
 let bodyParser = require('body-parser');
 // Import Request for HTTP requests
@@ -24,6 +26,9 @@ let nodeAwait = require('await');
 let giphy = require('giphy-api')('dc6zaTOxFJmzC');
 // Import keyword extractor
 let keyword = require("keyword-extractor");
+// Import associative keywords
+let associative = fs.readFileSync("emotions.json");
+associative = JSON.parse(associative);
 
 let ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
 
@@ -42,31 +47,25 @@ app.listen(3000);
 
 console.log('Starting Aurora server on port 3000');
 
-/**
- * @function redirectToDocs
- * @description Redirects user to documentation if no path is given
- * @param {Object} req Data from request
- * @param {Object} res Results of request
- */
-app.get('/', function redirectToDocs(req, res) {
-    console.log('Root URL accesed, redirected to documentation');
-    res.redirect('https://github.com/tijnrenders/aurora');
-});
-
 app.post('/', function getGif(req, res) {
+
+    //TODO Add type verfification for input
 
     let text = req.body.text;
     console.log('String received: ' + text);
 
+
     let getTone = nodeAwait('tone');
-    let getGifs = nodeAwait('toneResults', 'keywords');
+    let getGifs = nodeAwait('selectedEmotion', 'keywords');
 
     getToneAnalysis(text);
 
     getTone.then(function(got){
 
+        // Filter tone scores from Watson JSON
         let data = got.tone.document_tone.tone_categories[0].tones;
 
+        // Map them to their values
         let cleanedToneResults = {
             "anger" :   data[0].score,
             "disgust" : data[1].score,
@@ -75,20 +74,23 @@ app.post('/', function getGif(req, res) {
             "sadness" : data[4].score,
         };
 
+        // Sort from highest to lowest value
         cleanedToneResults = sortProperties(cleanedToneResults);
+        let topTone = cleanedToneResults[0][0];
+        console.log('Dominant tone is: ' + String(topTone));
 
+        let associativeWords = Object.values(associative[topTone]);
+        let selectedEmotion = associativeWords[Math.floor(Math.random() * associativeWords.length)];
+        console.log('Selected random emotion is: ' + String(selectedEmotion));
 
-        let keywords = keyword.extract(text,{
-            language:"english",
+        let keywords = keyword.extract(text, {
+            language:"english", 
             remove_digits: true,
-            return_changed_case:true,
-            remove_duplicates: false
-
+            return_changed_case: true,
+            remove_duplicates: true
         });
-
-        console.log(keywords);
-
-        getGifs.keep('toneResults', cleanedToneResults);
+        
+        getGifs.keep('selectedEmotion', selectedEmotion);
         getGifs.keep('keywords', keywords);
 
     },function(err){
@@ -97,13 +99,21 @@ app.post('/', function getGif(req, res) {
 
     getGifs.then(function(got){
 
+        let giphyQuery = got.selectedEmotion;
 
-        giphy.search(got.toneResults[0][0]).then(function (res) {
+        for(let i = 0; i < got.keywords.length; i++) {
+            console.log('Getting keywords: Keyword ' + String(i) + ' is ' + got.keywords[i]);
+            giphyQuery = giphyQuery + ' ' + got.keywords[i];
+        }
 
+        console.log('Searching Giphy for query: ' + giphyQuery);
 
-            let firstResult = res.data[0].images.fixed_height.url;
-            firstResult = firstResult.replace(/\s/g, '');
-            sendResponse(firstResult);
+        giphy.search(giphyQuery).then(function (res) {
+
+            let randomUnderTen = Math.floor((Math.random() * 2) + 1);
+
+            let randomGif = res.data[randomUnderTen].images.fixed_height.url;
+            sendResponse(randomGif);
         });
     });
 

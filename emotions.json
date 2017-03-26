@@ -1,0 +1,37 @@
+{
+    "anger": {
+        "0": "hated",
+        "1": "mad",
+        "2": "annoying",
+        "3": "raging",
+        "4": "angry"
+    },
+    "disgust": {
+        "0": "disgusting",
+        "1": "dirty",
+        "2": "disliked",
+        "3": "repulsive",
+        "4": "distastefull"
+    },
+    "fear": {
+        "0": "fear",
+        "1": "scary",
+        "2": "terrifying",
+        "3": "concerning",
+        "4": "worrying"
+    },
+    "joy": {
+        "0": "happy",
+        "1": "joyfull",
+        "2": "cute",
+        "3": "funny",
+        "4": "charming"
+    },
+    "sadness": {
+        "0": "sad",
+        "1": "crying",
+        "2": "depressed",
+        "3": "unhappy",
+        "4": "somber"
+    }
+}
