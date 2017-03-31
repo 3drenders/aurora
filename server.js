@@ -12,6 +12,8 @@
 let express = require('express');
 // Import filesystem 
 let fs = require("fs");
+// Import Path
+let path = require('path');
 // Import BodyParser for parsing data
 let bodyParser = require('body-parser');
 // Import Request for HTTP requests
@@ -27,7 +29,7 @@ let giphy = require('giphy-api')('dc6zaTOxFJmzC');
 // Import keyword extractor
 let keyword = require("keyword-extractor");
 // Import associative keywords
-let associative = fs.readFileSync("./emotions.json");
+let associative = fs.readFileSync(path.join(__dirname, 'emotions.json'), 'utf8');
 associative = JSON.parse(associative);
 
 let ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
