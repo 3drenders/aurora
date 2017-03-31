@@ -43,9 +43,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 //Setup server on port 3000
-app.listen(3000);
+app.listen(3001);
 
-console.log('Starting Aurora server on port 3000');
+console.log('Starting Aurora server on port 3001');
 
 app.post('/', function getGif(req, res) {
 
