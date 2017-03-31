@@ -27,7 +27,7 @@ let giphy = require('giphy-api')('dc6zaTOxFJmzC');
 // Import keyword extractor
 let keyword = require("keyword-extractor");
 // Import associative keywords
-let associative = fs.readFileSync("emotions.json");
+let associative = fs.readFileSync("./emotions.json");
 associative = JSON.parse(associative);
 
 let ToneAnalyzerV3 = require('watson-developer-cloud/tone-analyzer/v3');
@@ -43,9 +43,9 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 //Setup server on port 3000
-app.listen(3000);
+app.listen(3001);
 
-console.log('Starting Aurora server on port 3000');
+console.log('Starting Aurora server on port 3001');
 
 app.post('/', function getGif(req, res) {
 
